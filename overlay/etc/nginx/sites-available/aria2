@@ -1,0 +1,53 @@
+server {
+    listen 80;
+    server_name localhost;
+    root /var/www/;
+
+    # Maximum size for file upload
+    client_max_body_size 15M;
+
+    # Force authentication
+    auth_basic "Cloud SeedBox";
+    auth_basic_user_file /var/www/credentials;
+
+    # If passwd file doesn't exist, return the unused HTTP code 599 to go to
+    # @noauth
+    if (!-f /var/www/credentials) {
+        return 599;
+    }
+    error_page 599 = @noauth;
+
+    # Since credentials aren't setup, disable authentication and return
+    # autoinstaller
+    location @noauth {
+        auth_basic off;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root/credentials.php;
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+    }
+
+    # Serve PHP files
+    location ~ \.php$ {
+        try_files $uri =404;
+        include fastcgi_params;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+    }
+
+    # Use h5ai to have a pretty listing. /var/www/downloads is a symbolic link
+    # to aria2 download directory.
+    location /downloads {
+        index  /_h5ai/public/index.php;
+    }
+
+    location /filemanager {
+        index index.html;
+    }
+
+    # Public folder without authentication
+    location /downloads/public {
+        autoindex on;
+        auth_basic off;
+    }
+}
