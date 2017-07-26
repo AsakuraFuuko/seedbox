@@ -1,0 +1,30 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          aria2
+# Required-Start:    $remote_fs $network
+# Required-Stop:     $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Aria2 Downloader
+### END INIT INFO
+ 
+case "$1" in
+start)
+ 
+echo -n "Starting aria2c"
+sudo -u aria /usr/bin/aria2c --conf-path=/home/aria/aria2.conf -D
+#把上面的两个pi换成你的用户名
+;;
+stop)
+ 
+echo -n "Shutting down aria2c "
+killall aria2c
+;;
+restart)
+ 
+killall aria2c
+sudo -u aria /usr/bin/aria2c --conf-path=/home/aria/aria2.conf -D
+#把上面的两个pi换成你的用户名
+;;
+esac
+exit
